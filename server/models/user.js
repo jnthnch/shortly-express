@@ -43,6 +43,7 @@ class Users extends Model {
     };
 
     return super.create.call(this, newUser);
+
   }
 }
 
