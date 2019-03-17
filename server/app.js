@@ -26,9 +26,29 @@ app.get('/',
 //     res.render('index');
 //   });
 app.post('/login', function (req, res) {
-  models.Users.compare(req.body.password);
+  var userPassword = req.body.password;
 
-  res.send('youre logged in');
+  models.Users.get({ username: req.body.username })
+    .then(function (result) {
+
+      var mySalt = result.salt;
+      if (models.Users.compare(userPassword, result.password, mySalt)) {
+        res.redirect('/');
+      } else {
+        res.redirect('/login');
+      }
+    })
+    .catch(function () {
+      res.redirect('/login');
+    });
+
+  // .then(function () {
+  //   res.send('passwords matched');
+  // })
+  // .catch(function (err) {
+  //   console.log(err);
+  // });
+
 
 });
 
@@ -38,12 +58,11 @@ app.get('/signup',
   });
 
 app.post('/signup', function (req, res) {
-  console.log(req.body);
   models.Users.create({ username: req.body.username, password: req.body.password })
     .then(function () {
       res.redirect('/');
     })
-    .catch(function () {
+    .catch(function (error) {
       if (error.code === 'ER_DUP_ENTRY') {
         res.redirect('/signup');
       }
